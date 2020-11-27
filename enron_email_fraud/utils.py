@@ -223,14 +223,16 @@ def validate_classifier(
     recall = 1 * TP / (TP + FN)
     f1 = (2.0 * TP) / ((2 * TP) + FP + FN)
 
-    print "Aggregate Model Classification Performance"
-    print "=" * 50
+    mc_title = "{} Aggregate Model Classification Performance".format(clf_name)
+    print mc_title
+    print "=" * len(mc_title)
     print "Population:\t", np.sum(cf_matricies)
     print "Accuracy:\t", round(acc, 2)
     print "Precision:\t", round(precision, 2)
     print "Recall:\t\t", round(recall, 2)
     print "F1 Score:\t", round(f1, 2)
     print
-    print "Aggregate Confusion Matrix"
-    print "=" * 50
+    fm_title = "{} Aggregate Confusion Matrix".format(clf_name)
+    print fm_title
+    print "=" * len(fm_title)
     print np.sum(cf_matricies, axis=0)
