@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 from feature_format import featureFormat, targetFeatureSplit
 
-# from sklearn.cross_validation import KFold
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.model_selection import (
     train_test_split,
@@ -12,23 +11,20 @@ from sklearn.model_selection import (
     KFold,
     StratifiedShuffleSplit,
 )
-from sklearn.pipeline import Pipeline
-from sklearn.naive_bayes import GaussianNB
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.decomposition import PCA
-from sklearn.metrics import accuracy_score
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report, confusion_matrix
-from sklearn.feature_selection import RFE
-from sklearn.linear_model import LogisticRegression
 
 import seaborn as sns
 from scipy import stats
 
 
 def summarizeFeature(data, feature):
+    """prints a statistical summary for an individual DataFrame feature
+
+    Args:
+        data (pandas.core.frame.DataFrame): DataFrame that contains the feature
+        feature (string): name of the feature
+    """
+
     print "\nSUMMARY FOR: '{}'".format(feature.upper())
     print "=" * 25
     print (data[feature].astype(np.float64).describe())
@@ -104,52 +100,52 @@ def plotData(data_dict, features, xLabel, yLabel, markOutlier=True):
 
 
 def create_features(df, features_list):
+    """creates the feature/target split, using the supplied DataFrame and the desired Feature List
+
+    Args:
+        df (pandas.core.frame.DataFrame): DataFrame containing the feature set
+        features_list (list): str, list of DataFrame features to include
+
+    Returns:
+        list: (
+            features (list): feature_list features
+            labels (list): POIs data feature
+            my_dataset (dict): original dataset with included features
+        )
+    """
+
     my_dataset = df[features_list].transpose().to_dict()
 
     data = featureFormat(my_dataset, features_list, sort_keys=True, remove_NaN=True)
     labels, features = targetFeatureSplit(data)
-    labels, features = np.array(labels), np.array(features)
-
-    # save 30% of data for testing
-    features_train, features_test, labels_train, labels_test = train_test_split(
-        features, labels, test_size=0.3, random_state=1
-    )
 
     return (
-        features_train,
-        features_test,
-        labels_train,
-        labels_test,
-        features,
-        labels,
+        np.array(features),
+        np.array(labels),
         my_dataset,
     )
 
 
-def calculate_poi_msgs(x):
-    total_msgs = x["from_messages"] + x["to_messages"]
-    x["poi_messages"] = 0
+def calculate_pct_poi_msgs(series):
+    """calculates the percentage of a potential POI's
+       total messages that are to or from a POI
+
+    Args:
+        series (pandas.core.series.Series): data series associated with a single POI
+
+    Returns:
+        [pandas.core.series.Series]: data series with the added POI message calculate
+    """
+    total_msgs = series["from_messages"] + series["to_messages"]
+    series["pct_poi_messages"] = 0
 
     if total_msgs > 0:
-        x["poi_messages"] = (
-            (x["from_poi_to_this_person"] + x["from_this_person_to_poi"])
+        series["pct_poi_messages"] = (
+            (series["from_poi_to_this_person"] + series["from_this_person_to_poi"])
             / float(total_msgs)
         ) * 100
 
-    return x["poi_messages"]
-
-
-def printPredictions(predictions, labels_test):
-    print
-    print (
-        "{} predictions / {} test data points".format(
-            len(predictions), len(labels_test)
-        )
-    )
-    print "PREDICTIONS: ", pd.DataFrame(predictions, dtype=int).transpose().values
-    print "TEST:\t", pd.DataFrame(labels_test, dtype=int).transpose().values
-    print "{} POIs detected".format(len([n for n in predictions if n == 1]))
-    print
+    return series["pct_poi_messages"]
 
 
 def validate_classifier(
@@ -165,7 +161,20 @@ def validate_classifier(
     },
     random_state=None,
 ):
-    print "\nValidating {}".format(clf_name)
+    """fits a classifier to a test and train dataset and performs
+       validation summaries and reports using classifier predictions
+
+    Args:
+        clf_name (string): display name for the classifier
+        clf ([type]): [description]
+        features ([type]): [description]
+        labels ([type]): [description]
+        folds (int, optional): [description]. Defaults to 10.
+        reports (dict, optional): [description]. Defaults to { "classification": False, "best_estimator": False, "confusion_matrix": False, }.
+        random_state ([type], optional): [description]. Defaults to None.
+    """
+
+    print "\nValidating {}: random_state = {}".format(clf_name, random_state)
     print "Mean {}-Fold Cross Validation Test Score: {:.2f}%\n".format(
         folds,
         cross_validate(clf, features, labels, cv=folds, scoring="accuracy")[
@@ -217,11 +226,28 @@ def validate_classifier(
             print
 
     # aggregate summary information
+    population, acc, precision, recall, f1 = 0, 0, 0, 0, 0
     population = np.sum(cf_matricies)
-    acc = 1 * (TP + TN) / population
-    precision = 1 * TP / (TP + FP)
-    recall = 1 * TP / (TP + FN)
-    f1 = (2.0 * TP) / ((2 * TP) + FP + FN)
+
+    try:
+        acc = 1 * (TP + TN) / population
+    except ZeroDivisionError:
+        pass
+
+    try:
+        precision = 1 * TP / (TP + FP)
+    except ZeroDivisionError:
+        pass
+
+    try:
+        recall = 1 * TP / (TP + FN)
+    except ZeroDivisionError:
+        pass
+
+    try:
+        f1 = (2.0 * TP) / ((2 * TP) + FP + FN)
+    except ZeroDivisionError:
+        pass
 
     mc_title = "{} Aggregate Model Classification Performance".format(clf_name)
     print mc_title
