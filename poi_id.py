@@ -69,6 +69,7 @@ features_list = [
     "bonus",
     "exercised_stock_options",
     "expenses",
+    "pct_poi_messages",
 ]  # You will need to use more features
 
 ### Load the dictionary containing the dataset
@@ -117,7 +118,7 @@ models = [
         },
     },
     {
-        "title": "AdaBoost (PCA) -- Tuned",
+        "title": "AdaBoost (RobustScaler + PCA) -- Tuned",
         "pipeline": Pipeline(
             steps=[
                 ("scaler", RobustScaler()),
@@ -188,23 +189,40 @@ for model in models:
         random_state=RANDOM_STATE,
     )
 
-# selected Classifier
+# selected Classifier (without the new 'pct_poi_messages' feature)
+# clf = Pipeline(
+#     steps=[
+#         ("scaler", RobustScaler()),
+#         ("pca", PCA(n_components=2)),
+#         (
+#             "clf",
+#             DecisionTreeClassifier(
+#                 criterion="gini",
+#                 splitter="random",
+#                 min_samples_split=4,
+#                 random_state=RANDOM_STATE,
+#             ),
+#         ),
+#     ]
+# )
+
+
+# selected Classifier (without the new 'pct_poi_messages' feature)
 clf = Pipeline(
     steps=[
-        ("scaler", RobustScaler()),
-        ("pca", PCA(n_components=2)),
+        ("scaler", RobustScaler(quantile_range=(25, 75))),
+        ("pca", PCA(n_components=2, random_state=RANDOM_STATE)),
         (
             "clf",
-            DecisionTreeClassifier(
-                criterion="gini",
-                splitter="random",
-                min_samples_split=4,
+            AdaBoostClassifier(
+                n_estimators=16,
+                algorithm="SAMME",
+                learning_rate=1,
                 random_state=RANDOM_STATE,
             ),
         ),
     ]
 )
-
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall
 test_classifier(clf=clf, dataset=my_dataset, feature_list=features_list, folds=FOLDS)
