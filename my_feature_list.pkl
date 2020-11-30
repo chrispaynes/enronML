@@ -7,6 +7,4 @@ aS'exercised_stock_options'
 p3
 aS'expenses'
 p4
-aS'pct_poi_messages'
-p5
 a.

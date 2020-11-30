@@ -52,11 +52,16 @@
     - [KNeighbors (PCA) -- Tuned: random_state = 42](#kneighbors-pca----tuned-random_state--42)
     - [AdaBoost (RobustScaler + PCA) -- Tuned: random_state = 42](#adaboost-robustscaler--pca----tuned-random_state--42)
       - [with 'pct_poi_messages'](#with-pct_poi_messages)
-- [Selected Classifier](#selected-classifier)
+- [Selected Classifier At 100 Folds](#selected-classifier-at-100-folds)
     - [Without the 'pct_poi_messages' feature](#without-the-pct_poi_messages-feature)
     - [With the 'pct_poi_messages' feature](#with-the-pct_poi_messages-feature)
     - [10-Fold Model Evaluation Metrics](#10-fold-model-evaluation-metrics)
       - [Confusion Matrix](#confusion-matrix)
+- [Selected Classifier At 1000 Folds](#selected-classifier-at-1000-folds)
+    - [Without the 'pct_poi_messages' feature](#without-the-pct_poi_messages-feature-1)
+    - [With the 'pct_poi_messages' feature](#with-the-pct_poi_messages-feature-1)
+    - [1000-Fold Model Evaluation Metrics](#1000-fold-model-evaluation-metrics)
+      - [Confusion Matrix](#confusion-matrix-1)
 - [Additional Resources](#additional-resources)
 
 # Requirements
@@ -792,7 +797,7 @@ AdaBoost (RobustScaler + PCA) -- Tuned Aggregate Confusion Matrix
 | F1 Score | 0.54                       | 0.63                    |
 
 
-# Selected Classifier
+# Selected Classifier At 100 Folds
 The `AdaBoost (RobustScaler + PCA)` was selected as the best classifier, because it predicted the data quickly and achieved highest F1 Score.
 
 ### Without the 'pct_poi_messages' feature
@@ -830,12 +835,54 @@ Pipeline(
 | F1 Score   | 0.63  | The F1 Score is the Harmonic Mean between Precision and Recall -- this is the metric that we wanted to focus on improving because it balances Precision and Recall.                                                                                                                                                                                                                                                                         |
 
 #### Confusion Matrix
-Allows for understanding how correct the classifier predictions were in comparision to the actual values.
-
 | n = 140                   | Predicted Non-POI (0) | Predict POI (1) |
 | ------------------------- | --------------------- | --------------- |
 | <b>Actual Non-POI (0)</b> | 118 (TN)              | 2 (FP)          |
 | <b>Actual POI (1)</b>     | 10 (FN)               | 10 (TP)         |
+
+
+# Selected Classifier At 1000 Folds
+The `RandomForest (RobustScaler + PCA)` was selected as the best classifier at 1000 folds, because it achieved the highest F1 Score.
+
+### Without the 'pct_poi_messages' feature
+Of the 4 models that we've tuned, all but the AdaBoost (RobustScaler + PCA) achieved a Precision and Recall above 0.3 for the 1000-Fold Cross Validation with a total of 14000 samples.
+
+### With the 'pct_poi_messages' feature
+Of the 4 models that we've tuned, all 4 achieved a Precision and Recall above 0.3 for the 1000-Fold Cross Validation with a total of 14000 samples. The Random Forest classifier had the highest F1 Score when not using the `pct_poi_messages`, yet saw a 0.09 decrease in the F1 Score when using this feature.
+```
+Pipeline(
+    steps=[
+        ("scaler", RobustScaler()),
+        ("pca", PCA(n_components=2)),
+        (
+            "clf",
+            DecisionTreeClassifier(
+                criterion="gini",
+                splitter="random",
+                min_samples_split=4,
+                random_state=RANDOM_STATE,
+            ),
+        ),
+    ]
+)
+```
+
+### 1000-Fold Model Evaluation Metrics
+| metric     | value | description                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Population | 14000 | The total number of training observations included in the matrix                                                                                                                                                                                                                                                                                                                                                                            |
+| Accuracy   | 0.89  | Accuracy represents the percentage of predictions where the classifier correctly classified a sample. While Accuracy does indicate the model's ability to classify a sample, it's not the ideal or primary metric since our classification is skewed toward having more individuals that are not a POI. This means 90% of the time the model correctly classified a sample, and 9% of the time the model incorrectly classified the sample. |
+| Precision  | 0.65  | Precision represents the percentage of positive predictions where the model classified a sample as a POI and that sample was actually a POI. Out of 1,459 positive predictions, 65% of the time the model correctly classified the sample as a POI.                                                                                                                                                                                         |
+| Recall     | 0.48  | Recall represents the percentage of Actual POI samples where the classifier correctly classified the sample as a POI. Out of 2,000 POI samples, 48% of the time the model correctly classified the sample as a POI.                                                                                                                                                                                                                         |
+| F1 Score   | 0.55  | The F1 Score is the Harmonic Mean between Precision and Recall -- this is the metric that we wanted to focus on improving because it balances Precision and Recall.                                                                                                                                                                                                                                                                         |
+
+#### Confusion Matrix
+Allows for understanding how correct the classifier predictions were in comparision to the actual values.
+
+| n = 14000                 | Predicted Non-POI (0) | Predict POI (1) |
+| ------------------------- | --------------------- | --------------- |
+| <b>Actual Non-POI (0)</b> | 11492 (TN)            | 508 (FP)        |
+| <b>Actual POI (1)</b>     | 1049 (FN)             | 951 (TP)        |
 
 # Additional Resources
 - [How to Scale Data With Outliers for Machine Learning](https://machinelearningmastery.com/robust-scaler-transforms-for-machine-learning/)

@@ -161,16 +161,6 @@ def validate_classifier(
     """
 
     print "\nValidating {}: random_state = {}".format(clf_name, random_state)
-    print "Mean {}-Fold Cross Validation Test Score: {:.2f}%\n".format(
-        folds,
-        cross_validate(clf, features, labels, cv=folds, scoring="accuracy")[
-            "test_score"
-        ].mean()
-        * 100,
-    )
-
-    # print ("features", features)
-    # exit()
 
     sss = StratifiedShuffleSplit(n_splits=folds, random_state=random_state)
 
@@ -180,7 +170,6 @@ def validate_classifier(
     X_train, X_test, y_train, y_test = None, None, None, None
 
     for train_index, test_index in sss.split(features, labels):
-        # print ("TRAIN:", train_index, "TEST:", test_index)
         X_train, X_test = features[train_index], features[test_index]
         y_train, y_test = labels[train_index], labels[test_index]
 

@@ -59,7 +59,7 @@ pd.set_option("display.max_columns", None)
 # set a consistent randomization
 RANDOM_STATE = 42
 # set a consistent number of folds/splits
-FOLDS = 10
+FOLDS = 1000
 
 ### Task 1: Select what features you'll use.
 ### features_list is a list of strings, each of which is a feature name.
@@ -69,7 +69,7 @@ features_list = [
     "bonus",
     "exercised_stock_options",
     "expenses",
-    "pct_poi_messages",
+    # "pct_poi_messages",
 ]  # You will need to use more features
 
 ### Load the dictionary containing the dataset
@@ -189,36 +189,36 @@ for model in models:
         random_state=RANDOM_STATE,
     )
 
-# selected Classifier (without the new 'pct_poi_messages' feature)
+# selected Classifier (without the new 'pct_poi_messages' feature) at 10 Folds
 # clf = Pipeline(
 #     steps=[
-#         ("scaler", RobustScaler()),
-#         ("pca", PCA(n_components=2)),
+#         ("scaler", RobustScaler(quantile_range=(25, 75))),
+#         ("pca", PCA(n_components=2, random_state=RANDOM_STATE)),
 #         (
 #             "clf",
-#             DecisionTreeClassifier(
-#                 criterion="gini",
-#                 splitter="random",
-#                 min_samples_split=4,
+#             AdaBoostClassifier(
+#                 n_estimators=16,
+#                 algorithm="SAMME",
+#                 learning_rate=1,
 #                 random_state=RANDOM_STATE,
 #             ),
 #         ),
 #     ]
 # )
 
-
-# selected Classifier (without the new 'pct_poi_messages' feature)
+# selected Classifier (without the new 'pct_poi_messages' feature) at 1000 Folds
 clf = Pipeline(
     steps=[
-        ("scaler", RobustScaler(quantile_range=(25, 75))),
-        ("pca", PCA(n_components=2, random_state=RANDOM_STATE)),
+        ("scaler", RobustScaler(quantile_range=(32, 68))),
+        ("pca", PCA(n_components=2)),
         (
             "clf",
-            AdaBoostClassifier(
-                n_estimators=16,
-                algorithm="SAMME",
-                learning_rate=1,
+            RandomForestClassifier(
                 random_state=RANDOM_STATE,
+                criterion="gini",
+                n_estimators=20,
+                min_samples_split=2,
+                class_weight=None,
             ),
         ),
     ]
