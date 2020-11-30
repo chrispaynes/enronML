@@ -51,6 +51,7 @@
     - [RandomForest (RobustScaler + PCA) -- Tuned: random_state = 42](#randomforest-robustscaler--pca----tuned-random_state--42)
     - [KNeighbors (PCA) -- Tuned: random_state = 42](#kneighbors-pca----tuned-random_state--42)
     - [AdaBoost (RobustScaler + PCA) -- Tuned: random_state = 42](#adaboost-robustscaler--pca----tuned-random_state--42)
+      - [with 'pct_poi_messages'](#with-pct_poi_messages)
 - [Selected Classifier](#selected-classifier)
     - [Without the 'pct_poi_messages' feature](#without-the-pct_poi_messages-feature)
     - [With the 'pct_poi_messages' feature](#with-the-pct_poi_messages-feature)
@@ -768,6 +769,24 @@ AdaBoost (RobustScaler + PCA) -- Tuned Aggregate Confusion Matrix
  [ 10  10]]
 ```
 
+#### with 'pct_poi_messages'
+```
+Mean 10-Fold Cross Validation Test Score: 91.14%
+
+AdaBoost (RobustScaler + PCA) -- Tuned Aggregate Model Classification Performance
+=================================================================================
+Population:     140
+Accuracy:       0.91
+Precision:      0.83
+Recall:         0.5
+F1 Score:       0.63
+
+AdaBoost (RobustScaler + PCA) -- Tuned Aggregate Confusion Matrix
+=================================================================
+[[118   2]
+ [ 10  10]]
+```
+
 | metric   | without 'pct_poi_messages' | with 'pct_poi_messages' |
 | -------- | -------------------------- | ----------------------- |
 | F1 Score | 0.54                       | 0.63                    |
@@ -802,20 +821,20 @@ Pipeline(
 
 
 ### 10-Fold Model Evaluation Metrics
-| metric     | value | description                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| ---------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Population | 140   | The total number of training observations included in the matrix                                                                                                                                                                                                                                                                                                                                                                             |
-| Accuracy   | 0.9   | Accuracy represents the percentage of predictions where the classifier correctly classified a sample. While Accuracy does indicate the model's ability to classify a sample, it's not the ideal or primary metric since our classification is skewed toward having more individuals that are not a POI. This means 90% of the time the model correctly classified a sample, and 10% of the time the model incorrectly classified the sample. |
-| Precision  | 0.71  | Precision represents the percentage of positive predictions where the model classified a sample as a POI and that sample was actually a POI. Out of 14 positive predictions, 71% of the time the model correctly classified the sample as a POI.                                                                                                                                                                                             |
-| Recall     | 0.5   | Recall represents the percentage of Actual POI samples where the classifier correctly classified the sample as a POI. Out of 20 POI samples, 50% of the time the model correctly classified the sample as a POI.                                                                                                                                                                                                                             |
-| F1 Score   | 0.59  | The F1 Score is the Harmonic Mean between Precision and Recall -- this is the metric that we wanted to focus on improving because it balances Precision and Recall.                                                                                                                                                                                                                                                                          |
+| metric     | value | description                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Population | 140   | The total number of training observations included in the matrix                                                                                                                                                                                                                                                                                                                                                                            |
+| Accuracy   | 0.91  | Accuracy represents the percentage of predictions where the classifier correctly classified a sample. While Accuracy does indicate the model's ability to classify a sample, it's not the ideal or primary metric since our classification is skewed toward having more individuals that are not a POI. This means 90% of the time the model correctly classified a sample, and 9% of the time the model incorrectly classified the sample. |
+| Precision  | 0.83  | Precision represents the percentage of positive predictions where the model classified a sample as a POI and that sample was actually a POI. Out of 12 positive predictions, 83% of the time the model correctly classified the sample as a POI.                                                                                                                                                                                            |
+| Recall     | 0.5   | Recall represents the percentage of Actual POI samples where the classifier correctly classified the sample as a POI. Out of 20 POI samples, 50% of the time the model correctly classified the sample as a POI.                                                                                                                                                                                                                            |
+| F1 Score   | 0.63  | The F1 Score is the Harmonic Mean between Precision and Recall -- this is the metric that we wanted to focus on improving because it balances Precision and Recall.                                                                                                                                                                                                                                                                         |
 
 #### Confusion Matrix
 Allows for understanding how correct the classifier predictions were in comparision to the actual values.
 
 | n = 140                   | Predicted Non-POI (0) | Predict POI (1) |
 | ------------------------- | --------------------- | --------------- |
-| <b>Actual Non-POI (0)</b> | 116 (TN)              | 4 (FP)          |
+| <b>Actual Non-POI (0)</b> | 118 (TN)              | 2 (FP)          |
 | <b>Actual POI (1)</b>     | 10 (FN)               | 10 (TP)         |
 
 # Additional Resources
